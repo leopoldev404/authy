@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+env:
+  DOTNET_VERSION: 9.x
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Auth
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: actions/setup-dotnet@4
+        uses: actions/checkout@v4
+        with: ${{ DOTNET_VERSION }}
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish --configuration Release --no-restore --no-build

@@ -1,0 +1,29 @@
+services:
+  debby:
+    image: postgres:17-alpine
+    container_name: debby
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: dev
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  authy:
+    image: authy
+    container_name: authy
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Container
+      ASPNETCORE_URLS: "http://+:5000"
+    depends_on:
+      debby:
+        condition: service_healthy
