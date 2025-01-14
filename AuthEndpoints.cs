@@ -6,17 +6,13 @@ namespace Auth;
 
 internal sealed record Member(string Id, string Username, string PasswordHash);
 
-internal sealed record RegisterMemberRequest(string Username, string Password);
+internal sealed record RegisterRequest(string Username, string Password);
 
-internal sealed record RegisterMemberResponse(
-    Member Member,
-    string AccessToken,
-    string RefreshToken
-);
+internal sealed record RegisterResponse(Member Member, string AccessToken, string RefreshToken);
 
-internal sealed record LoginMemberRequest(string Username, string Password);
+internal sealed record LoginRequest(string Username, string Password);
 
-internal sealed record LoginMemberResponse(string AccessToken, string RefreshToken);
+internal sealed record LoginResponse(string AccessToken, string RefreshToken);
 
 internal static class AuthEndpoints
 {
@@ -30,8 +26,8 @@ internal static class AuthEndpoints
         routeGroup.MapPost("/login", LoginAsync);
     }
 
-    private static async ValueTask<Ok<RegisterMemberResponse>> RegisterAsync(
-        RegisterMemberRequest request,
+    private static async ValueTask<Ok<RegisterResponse>> RegisterAsync(
+        RegisterRequest request,
         TokenProvider tokenProvider,
         PasswordHasher passwordHasher,
         IDbConnection dbConnection
@@ -54,7 +50,7 @@ internal static class AuthEndpoints
             .ConfigureAwait(false);
 
         return TypedResults.Ok(
-            new RegisterMemberResponse(
+            new RegisterResponse(
                 member,
                 tokenProvider.Generate(member.Id, member.Username),
                 "refreshToken"
@@ -62,8 +58,8 @@ internal static class AuthEndpoints
         );
     }
 
-    private static async ValueTask<Results<NotFound, Ok<LoginMemberResponse>>> LoginAsync(
-        LoginMemberRequest request,
+    private static async ValueTask<Results<NotFound, Ok<LoginResponse>>> LoginAsync(
+        LoginRequest request,
         TokenProvider tokenProvider,
         PasswordHasher passwordHasher,
         IDbConnection dbConnection
@@ -88,7 +84,7 @@ internal static class AuthEndpoints
             || !passwordHasher.Verify(request.Password, foundMember.PasswordHash)
             ? TypedResults.NotFound()
             : TypedResults.Ok(
-                new LoginMemberResponse(
+                new LoginResponse(
                     tokenProvider.Generate(foundMember.Id, foundMember.Username),
                     "refreshToken"
                 )
