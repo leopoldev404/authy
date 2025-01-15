@@ -4,15 +4,21 @@ using Npgsql;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<TokenProvider>();
-builder.Services.AddSingleton<PasswordHasher>();
+builder
+    .Services.AddOptions<JwtSettings>()
+    .BindConfiguration(JwtSettings.CONFIGURATION_SECTION_NAME)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
-builder.Services.AddSingleton<IDbConnection>(_ =>
+builder.Services.AddScoped<IDbConnection>(_ =>
 {
     NpgsqlConnection connection = new(builder.Configuration["DbConnectionString"]);
     connection.Open();
     return connection;
 });
+
+builder.Services.AddTransient<TokenProvider>();
+builder.Services.AddTransient<PasswordHasher>();
 
 builder.Services.AddHealthChecks();
 
